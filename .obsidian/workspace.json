@@ -1,0 +1,249 @@
+{
+  "main": {
+    "id": "06e0553c8b107cf3",
+    "type": "split",
+    "children": [
+      {
+        "id": "efa90fc1a057da08",
+        "type": "tabs",
+        "dimension": 18.533123028391167,
+        "children": [
+          {
+            "id": "e2868ae81a9afc9f",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "use Mid360/环境配置.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of 环境配置"
+            }
+          }
+        ]
+      },
+      {
+        "id": "545367bcb9d71930",
+        "type": "tabs",
+        "dimension": 81.46687697160883,
+        "children": [
+          {
+            "id": "722e7cbd44d76f6f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "use Mid360/环境配置.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "环境配置"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "4efbc207adfd6331",
+    "type": "split",
+    "children": [
+      {
+        "id": "e990ddc7f19e87ce",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "85d3ce1640c38e43",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "byCreatedTimeReverse",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "28abba3665a4bce0",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "8279cd27ef138dfe",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 200
+  },
+  "right": {
+    "id": "24381669437c8aab",
+    "type": "split",
+    "children": [
+      {
+        "id": "621410461e221bd7",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "26875519570d89ac",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "ROS2/ROS2入门篇/进阶篇-ROS2系统.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for 进阶篇-ROS2系统"
+            }
+          },
+          {
+            "id": "1c38907e02977902",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "ROS2/ROS2入门篇/进阶篇-ROS2系统.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from 进阶篇-ROS2系统"
+            }
+          },
+          {
+            "id": "67f6ee22fdfbb090",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "bbdb51b6a8b65a0a",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "e52a353df6df54b3",
+            "type": "leaf",
+            "state": {
+              "type": "github-copilot-chat-view",
+              "state": {},
+              "icon": "bot-message-square",
+              "title": "Copilot Chat"
+            }
+          }
+        ],
+        "currentTab": 4
+      }
+    ],
+    "direction": "horizontal",
+    "width": 435.5,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "85d3ce1640c38e43",
+  "lastOpenFiles": [
+    "use Mid360/images/Pasted image 20260205103937.png",
+    "use Mid360/images/Pasted image 20260205104625.png",
+    "use Mid360/环境配置.md",
+    "use Mid360/images/Pasted image 20260205110435.png",
+    "use Mid360/images/Pasted image 20260205110244.png",
+    "use Mid360/images/Pasted image 20260205105323.png",
+    "use Mid360/images/Pasted image 20260205102818.png",
+    "use Mid360/images/Pasted image 20260205103505.png",
+    "Pasted image 20260205101858.png",
+    "Pasted image 20260205101840.png",
+    "use Mid360/images/Pasted image 20260205100614.png",
+    "use Mid360/images",
+    "ROS2/ROS2入门篇/ROS2话题与服务.md",
+    "use Mid360",
+    "C++/智能指针.md",
+    "ROS2/ROS2入门篇/ROS2系统.md",
+    "ROS2/ROS2入门篇/动手使用ROS2.md",
+    "ROS2/ROS2入门篇/使用Make和Makefile构建项目.md",
+    "ROS2/ROS2入门篇/编程基础.md",
+    "C++/容器和算法.md",
+    "C++/模板.md",
+    "C++/链接和作用域.md",
+    "C++/命名空间和模块化编程.md",
+    "C++/静态对象强制类型转换.md",
+    "C++/副本构造器.md",
+    "C++/动态内存管理.md",
+    "C++/assert函数和捕获异常.md",
+    "C++/多继承(multiple inheritance)和虚继承(virtual inheritance).md",
+    "C++/重载输入输出流运算符.md",
+    "C++/const关键字.md",
+    "C++/运算符重载.md",
+    "C++/多态性.md",
+    "C++/抽象方法.md",
+    "C++/虚方法(virtual method).md",
+    "C++/Untitled/Untitled 1.md",
+    "C++/Untitled/Untitled.md",
+    "C++/类与对象.md",
+    "C++/Untitled",
+    "C++",
+    "ROS2/images",
+    "ROS2/ROS2入门篇"
+  ]
+}
