@@ -4,31 +4,8 @@
     "type": "split",
     "children": [
       {
-        "id": "0acd6e7cb8a9aecd",
+        "id": "b661ea50bfe8c87f",
         "type": "tabs",
-        "dimension": 11.086474501108649,
-        "children": [
-          {
-            "id": "e2868ae81a9afc9f",
-            "type": "leaf",
-            "state": {
-              "type": "outline",
-              "state": {
-                "file": "RM2027-UAV/方向调研/飞控板与电机电调.md",
-                "followCursor": false,
-                "showSearch": false,
-                "searchQuery": ""
-              },
-              "icon": "lucide-list",
-              "title": "大纲"
-            }
-          }
-        ]
-      },
-      {
-        "id": "efa90fc1a057da08",
-        "type": "tabs",
-        "dimension": 88.91352549889136,
         "children": [
           {
             "id": "5a39cf5d82b05a48",
@@ -36,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "RM2027-UAV/方向调研/飞控板与电机电调.md",
+                "file": "RM2027-UAV/方向调研/运算平台与视觉传感器.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "飞控板与电机电调"
+              "title": "运算平台与视觉传感器"
             }
           }
         ]
@@ -94,9 +71,12 @@
             "type": "leaf",
             "state": {
               "type": "bookmarks",
-              "state": {},
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
               "icon": "lucide-bookmark",
-              "title": "Bookmarks"
+              "title": "书签"
             }
           }
         ]
@@ -138,12 +118,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "ROS2/ROS2入门篇/进阶篇-ROS2系统.md",
+                "file": "RM2027-UAV/方向调研/运算平台与视觉传感器.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from 进阶篇-ROS2系统"
+              "title": "出链"
             }
           },
           {
@@ -184,14 +164,28 @@
               "icon": "bot-message-square",
               "title": "Copilot Chat"
             }
+          },
+          {
+            "id": "17e69987c04a0159",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "RM2027-UAV/方向调研/运算平台与视觉传感器.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "大纲"
+            }
           }
         ],
-        "currentTab": 4
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
-    "width": 435.5,
-    "collapsed": true
+    "width": 200
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -206,7 +200,19 @@
   },
   "active": "5a39cf5d82b05a48",
   "lastOpenFiles": [
+    "RM2027-UAV/方向调研/无人机硬件选型.md",
+    "RM2027-UAV/自主无人机学习/自主无人机导论/自主旋翼无人机导论.md",
+    "RM2027-UAV/无人机知识库/遥控器和接收机及其协议.md",
+    "RM2027-UAV/无人机知识库/无线数传.md",
+    "RM2027-UAV/无人机知识库/常用连接器介绍.md",
+    "RM2027-UAV/自主无人机学习/Fast-Drone-250/Fast-Drone-250项目.md",
+    "RM2027-UAV/方向调研/picture/PixPin_2026-09-18_22-04-40.png",
+    "RM2027-UAV/自主无人机学习/Fast-Drone-250",
+    "RM2027-UAV/自主无人机学习/自主无人机导论",
+    "RM2027-UAV/方向调研/picture/PixPin_2026-09-18_16-13-21.png",
+    "RM2027-UAV/方向调研/picture/PixPin_2026-09-18_16-13-21 1.png",
     "RM2027-UAV/方向调研/飞控板与电机电调.pdf",
+    "RM2027-UAV/无人机知识库",
     "RM2027-UAV/方向调研/picture/Pasted image 20260916215444.png",
     "RM2027-UAV/方向调研/picture/Pasted image 20260916215435.png",
     "RM2027-UAV/方向调研/picture/Pasted image 20260916215425.png",
@@ -215,26 +221,17 @@
     "Pasted image 20260916215444.png",
     "Pasted image 20260916215435.png",
     "Pasted image 20260916215425.png",
-    "Pasted image 20260916215356.png",
-    "RM2027-UAV/方向调研/picture/PixPin_2026-09-16_20-47-47.png",
-    "RM2027-UAV/方向调研/picture/PixPin_2026-09-16_20-39-04.png",
-    "RM2027-UAV/方向调研/飞控板与电机电调.md",
     "RM2027-UAV/方向调研/picture",
     "RM2027-UAV/方向调研/运算平台与视觉传感器.md",
     "RM2027-UAV/方向调研/9.13组会.md",
     "RM2027-UAV/方向调研/可能的参考方向.md",
     "www.nature.com/articles/s42256-025-01048-0.md",
-    "RM2027-UAV/Fast-Drone-250/Fast-Drone-250项目.md",
     "www.nature.com/articles",
     "www.nature.com",
     "www.bilibili.com/video/BV1sgMqzSExJ",
     "www.bilibili.com/video",
-    "www.bilibili.com",
-    "RM2027-UAV/Fast-Drone-250",
     "ROS2/ROS2入门篇/ROS2系统.md",
     "C++/抽象方法.md",
-    "RM2027-UAV/方向调研",
-    "RM2027-UAV",
     "C++/虚方法(virtual method).md",
     "C++/模板.md",
     "C++/构造器（构造函数）和析构器（析构函数）.md",
@@ -248,9 +245,6 @@
     "PositionEstimation/与飞控通信.md",
     "use Mid360/创建自启动脚本.md",
     "C++/智能指针.md",
-    "C++/容器和算法.md",
-    "C++/链接和作用域.md",
-    "C++/命名空间和模块化编程.md",
-    "C++/静态对象强制类型转换.md"
+    "C++/容器和算法.md"
   ]
 }
