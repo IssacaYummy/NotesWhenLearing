@@ -309,3 +309,6 @@ rowSpacingMeters: 0.015
 colSpacingMeters: 0.015
 ```
 填的是内部角点数量，尺度单位是米
+
+## 4. 导入自己的参数
+
