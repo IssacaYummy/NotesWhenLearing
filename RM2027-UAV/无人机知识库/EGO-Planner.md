@@ -27,6 +27,7 @@ sudo apt install \
 mkdir -p ~/planner_ws/src
 cd ~/planner_ws/src
 git clone https://github.com/ZJU-FAST-Lab/ego-planner-swarm.git
+cd ego-planner-swarm/
 git checkout ros2_version
 ```
 
@@ -54,6 +55,17 @@ rosdep install --from-paths src --ignore-src \
   --rosdistro humble -y \
   --skip-keys "Eigen3 PCL OpenCV Boost Armadillo dynamic_reconfigure"
 ```
+
+可能会报错
+```bash
+ERROR: the following packages/stacks could not have their rosdep keys resolved
+to system dependencies:
+odom_visualization: Cannot locate rosdep definition for [tf]
+
+```
+
+需要找到源码的`ego-planner-swarm/src/uav_simulator/Utils/odom_visualization/package.xml`文件，将`<depend>tf</depend>`改为`<depend>tf2</depend>`
+
 
 ## 5. 编译源码
 
@@ -93,7 +105,6 @@ ros2 launch ego_planner rviz.launch.py
 
 终端二：
 ```bash
-cd setup.bash/
 source install/setup.bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 

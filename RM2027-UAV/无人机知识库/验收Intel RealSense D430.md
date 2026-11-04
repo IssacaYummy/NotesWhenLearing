@@ -10,7 +10,7 @@ curl -sSf https://librealsense.realsenseai.com/Debian/librealsenseai.asc | \
 gpg --dearmor | sudo tee /etc/apt/keyrings/librealsenseai.gpg > /dev/null
 
 # Make sure apt HTTPS support is installed
-udo apt-get install apt-transport-https
+sudo apt-get install apt-transport-https
 
 # Add the server to the list of repositories
 echo "deb [signed-by=/etc/apt/keyrings/librealsenseai.gpg] https://librealsense.realsenseai.com/Debian/apt-repo `lsb_release -cs` main" | \

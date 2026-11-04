@@ -27,7 +27,7 @@ sudo apt install -y libeigen3-dev libboost-all-dev libceres-dev libopencv-dev ro
 # 都是一些常用库，如eigen，ceres，opencv等，不认识的话回家吧
 pip3 install --user rosbags evo scipy numpy
 echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc # 添加到环境变量
-source ~/.bashrc
+source ~/.bashrc # 重新加载环境变量
 ```
 - rosbags：不依赖 ROS 的 bag 转换工具，能够完成ROS1 与 ROS 2 的包互转。
 - evo：算轨迹误差（ATE）和画图。
@@ -300,15 +300,196 @@ ros2 run rqt_image_view rqt_image_view
 
 ## 3. 标定
 
-### 确认标定板参数，填写配置
-```yaml
-target_type: checkerboard
-targetCols: 17
-targetRows: 17
-rowSpacingMeters: 0.015
-colSpacingMeters: 0.015
-```
-填的是内部角点数量，尺度单位是米
-
+参考标定的教程
 ## 4. 导入自己的参数
 
+在/openvins/config目录下创建rs_d430目录，将自己标定后的参数填写成`estimator_config.yaml` 、`kalibr_imu_chain.yaml`、 `kalibr_imucam_chain.yaml`
+三个文件，放在rs_d43o目录下
+
+## 5. 启动OpenVINS
+
+下面先手持飞机运行OpenVINS，录制rosbag本地回放
+
+#### 终端1：发布相机话题
+
+```bash
+source /home/orangepi/px4_ws/env.sh
+
+rros2 launch realsense2_camera rs_launch.py \
+  camera_namespace:=camera \
+  camera_name:=camera \
+  enable_color:=false \
+  enable_depth:=false \
+  enable_infra1:=true \
+  enable_infra2:=true \
+  depth_module.infra_profile:=848x480x30 \
+  depth_module.infra1_format:=Y8 \
+  depth_module.infra2_format:=Y8 \
+  enable_sync:=true \
+  config_file:=/home/orangepi/px4_ws/realsense_emitter_off.yaml
+```
+
+#### 终端2：查看相机话题是否发布，并关闭红外模块
+```bash
+source /home/orangepi/px4_ws/env.sh
+ros2 topic list -t
+```
+
+#### 终端3：开启DDS Agent连接飞控
+```bash
+source /home/orangepi/px4_ws/env.sh
+./px4_ws/run_agent.sh 
+```
+#### 终端4：开启转换节点
+```bash
+source /home/orangepi/px4_ws/env.sh
+ros2 run px4_imu_bridge sensor_combined_to_imu 
+```
+#### 终端5：启动OpenVINS
+```bash
+source ~/px4_ws/env.sh
+
+source ~/vio_ws/install/setup.bash
+
+ros2 launch ov_msckf subscribe.launch.py config:=rs_d430
+```
+
+**初始化操作方式**：
+1. 启动后先让无人机**保持静止 2～3 秒**（让 OpenVINS 收集静止窗口的初始重力方向与陀螺仪零偏）；
+2. 然后用手拿起无人机**平稳晃动或平移一下**（产生加速度激励超过 `init_imu_thresh: 1.0`）；
+3. 终端 5 会立刻打印 `[INIT]: SUCCESSFUL INITIALIZATION!` 并开始滚动输出实时状态耗时与特征跟踪日志。
+
+可以在终端2运行命令检查：
+```bash
+source ~/px4_ws/env.sh
+source ~/vio_ws/install/setup.bash
+# 1. 检查 OpenVINS 里程计输出频率（正常应稳定在 ~30 Hz）
+ros2 topic hz /ov_msckf/odomimu
+# 2. 打印一帧实时位姿（检查 position x/y/z 与 orientation 是否随移动合理变化）
+ros2 topic echo /ov_msckf/odomimu --once
+```
+
+#### 终端6：录制rosbag
+录制下面的话题后可以在Rviz2 中完整还原三维轨迹、机体坐标轴、特征点云和特征跟踪图像
+
+| 话题名称                     | 消息类型                                          | 在 Rviz2 中的作用                                                                |
+| ------------------------ | --------------------------------------------- | --------------------------------------------------------------------------- |
+| `/tf`                    | `tf2_msgs/msg/TFMessage`                      | **必录**：提供 `global` → `imu` → `cam0/cam1` 坐标变换树（缺少它 Rviz2 无法定位 `global` 坐标系） |
+| `/ov_msckf/pathimu`      | `nav_msgs/msg/Path`                           | 绿色 VIO 历史运动轨迹线（`Path VIO`）                                                  |
+| `/ov_msckf/odomimu`      | `nav_msgs/msg/Odometry`                       | IMU 递推高频（200Hz）里程计（含位置、姿态、速度、协方差）                                           |
+| `/ov_msckf/poseimu`      | `geometry_msgs/msg/PoseWithCovarianceStamped` | 视觉更新时刻（30Hz）带协方差椭球的位姿                                                       |
+| `/ov_msckf/trackhist`    | `sensor_msgs/msg/Image`                       | 左右目拼接的特征点跟踪历史轨迹图（`Image Tracks`）                                            |
+| `/ov_msckf/points_msckf` | `sensor_msgs/msg/PointCloud2`                 | MSCKF 局部特征点云（橙色点云 `MSCKF Points`）                                           |
+| `/ov_msckf/points_slam`  | `sensor_msgs/msg/PointCloud2`                 | SLAM 持久特征点云（红色点云 `SLAM Points`）                                             |
+
+```bash
+source ~/px4_ws/env.sh
+source ~/vio_ws/install/setup.bash
+ros2 bag record -s sqlite3 -o ~/data/bags/vio_test01 \
+  /tf \
+  /ov_msckf/pathimu \
+  /ov_msckf/odomimu \
+  /ov_msckf/poseimu \
+  /ov_msckf/trackhist \
+  /ov_msckf/points_msckf \
+  /ov_msckf/points_slam
+```
+
+录制完成按ctrl+c退出
+
+# 无人机定点悬停测试
+
+## 1. 准备转换节点
+
+因为ROS2的坐标系定义和飞控的坐标系定义不同，所以需要先准备**OpenVINS → PX4 视觉里程计桥接节点** ，准备好以后需要修改飞控参数
+
+## 2.修改飞控参数
+
+| 参数名                     | 推荐设置值            | 含义与原因说明                                                              |
+| ----------------------- | ---------------- | -------------------------------------------------------------------- |
+| **`EKF2_EV_CTRL`**      | **`15`**（全勾选）    | 开启外部视觉融合：Bit 0 水平位置 + Bit 1 垂直位置 + Bit 2 3D 速度 + Bit 3 偏航角 Yaw       |
+| **`EKF2_HGT_REF`**      | **`3` (Vision)** | 将高度主参考源设为视觉（若先测试气压定高+视觉水平定点，可暂设 `0: Baro` 并将 `EKF2_EV_CTRL` 设为 `13`） |
+| **`EKF2_MAG_TYPE`**     | **`5` (None)**   | 室内测试且 `EKF2_EV_CTRL` 已融合视觉 Yaw 时，建议禁用磁罗盘防止室内钢筋磁场干扰航向                 |
+| **`EKF2_EV_NOISE_MD`**  | **`0`**          | 使用视觉消息自带的协方差矩阵，并以参数作为下限保护                                            |
+| **`EKF2_EV_DELAY`**     | **`0.0` ms**     | 时间戳已经靠uXRCE-DDS 的软件时间同步                                              |
+| **`EKF2_EV_POS_X/Y/Z`** | **`0.0` m**      | OpenVINS 输出的就是飞控 `imu` 坐标系原点的位姿，因此相对于 IMU 的杆臂为 0                     |
+模式添加一个Position模式
+
+## 3. 在小电脑启动OpenVINS
+#### 终端1：发布相机话题并关闭红外发射器
+
+
+
+```bash
+source /home/orangepi/px4_ws/env.sh
+
+# 下面的命令只需要执行一次
+cat > ~/px4_ws/realsense_emitter_off.yaml <<'EOF'
+depth_module.emitter_enabled: 0
+EOF
+
+ros2 launch realsense2_camera rs_launch.py \
+  camera_namespace:=camera \
+  camera_name:=camera \
+  enable_color:=false \
+  enable_depth:=false \
+  enable_infra1:=true \
+  enable_infra2:=true \
+  depth_module.infra_profile:=848x480x30 \
+  depth_module.infra1_format:=Y8 \
+  depth_module.infra2_format:=Y8 \
+  enable_sync:=true \
+  config_file:=/home/orangepi/px4_ws/realsense_emitter_off.yaml
+```
+
+#### 终端2：查看相机话题是否发布
+```bash
+source /home/orangepi/px4_ws/env.sh
+ros2 topic list -t
+```
+
+#### 终端3：开启DDS Agent连接飞控
+```bash
+source /home/orangepi/px4_ws/env.sh
+./px4_ws/run_agent.sh 
+```
+#### 终端4：开启转换节点
+```bash
+source /home/orangepi/px4_ws/env.sh
+ros2 run px4_imu_bridge sensor_combined_to_imu 
+```
+#### 终端5：启动OpenVINS
+```bash
+source ~/px4_ws/env.sh
+
+source ~/vio_ws/install/setup.bash
+
+ros2 launch ov_msckf subscribe.launch.py config:=rs_d430
+```
+
+#### 终端6：启动Odom转换节点
+```bash
+source ~/px4_ws/env.sh
+
+ros2 run px4_imu_bridge odom_to_px4
+```
+
+录制原始数据
+```bash
+ros2 bag record -s sqlite3 --max-cache-size 300000000 -o ~/bags/$(date +%m%d_%H%M)_loop_slow \
+  /imu /camera/camera/infra1/image_rect_raw /camera/camera/infra2/image_rect_raw \
+  /camera/camera/infra1/camera_info /camera/camera/infra2/camera_info \
+  /fmu/out/sensor_combined /fmu/out/vehicle_odometry
+```
+
+录制OpenVINS的输出数据
+```bash
+ros2 bag record -s sqlite3 --max-cache-size 300000000 -o ~/data/bags/vio_test01 \
+/tf \
+/ov_msckf/pathimu \
+/ov_msckf/odomimu \
+/ov_msckf/poseimu \
+/ov_msckf/trackhist \
+/ov_msckf/points_msckf \
+/ov_msckf/points_slam
+```
