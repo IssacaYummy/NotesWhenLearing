@@ -8,13 +8,22 @@ sudo apt install -y build-essential cmake git curl wget vim htop python3-pip pyt
 ```
 
 ## 2. 安装ROS2-Humble
-略
+
+使用鱼香ROS一键安装脚本，按照提示安装，安装基础版本
+
+```bash
+wget http://fishros.com/install -O fishros && . fishros
+```
 
 ## 3. 创建工作空间目录
 ```bash
 cd #返回Home目录
 
 mkdir -p ~/vio_ws/src ~/px4_ws/src ~/data/bags ~/data/calib ~/data/results  # -p参数为创建子目录的同时创建父目录，否则会报错
+
+# 如果是小电脑端，可以不创建calib目录和result目录
+mkdir -p ~/vio_ws/src ~/px4_ws/src ~/bags
+
 ```
 
 - `~/vio_ws`：OpenVINS 和自己的节点。
@@ -49,7 +58,7 @@ docker run hello-world
 出现下面的输出即为正常
 ![[Pasted image 20261023153257.png]]
 
-# 使用数据集跑通 OpenVINS
+# 编译OpenVINS，并使用数据集验证
 
 ## 1. 克隆OpneVINS算法并编译
 
@@ -57,11 +66,11 @@ docker run hello-world
 cd ~/vio_ws/src
 git clone https://github.com/rpng/open_vins.git
 cd ~/vio_ws
-colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+MAKEFLAGS="-j2" colcon build --executor sequential --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
 source install/setup.bash
 ```
 - `--symlink-install` 让你以后改 yaml 配置不必重编译。
-- 编译吃内存。如果内存不够或者电脑卡死，改成：`MAKEFLAGS="-j2" colcon build --executor sequential --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release`。 `- j2`的意思为限定两个核心编译，如果内存够多也可以 `- j4` 或者 `- j8`。
+- 编译吃内存。如果内存不够或者电脑卡死，所以使用：`MAKEFLAGS="-j2" colcon build --executor sequential --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release`。 `- j2`的意思为限定两个核心编译，如果内存够多也可以 `- j4` 或者 `- j8`。不加即为全速编译
 ## 2. 下载数据集并转为ros2格式
 从 EuRoC MAV 数据集官方页面下载 MH_01_easy 的 ROS bag（ROS1 格式的 .bag 文件），放到 `~/data/bags/`。然后使用下面的命令转为ros2格式
 也可以从这个链接下载： https://www.kaggle.com/datasets/chunai/euroc-mh-01-easy-ros-bag-dataset
@@ -187,7 +196,9 @@ MicroXRCEAgent --help
 
 Agent 路径应位于 `/home/orangepi/px4_ws/install/microxrcedds_agent/bin/`；消息包应来自同一工作区。Agent 直接通过 `MicroXRCEAgent` 命令启动，不需要 `ros2 run microxrcedds_agent ...`。
 
-以后每个运行终端统一使用
+在~/px4_ws目录下创建一个env.sh脚本，可用`source ~/px4_ws/env.sh`初始化环境
+
+~/px4_ws/env.sh
 ```bash
 source /opt/ros/humble/setup.bash
 source ~/px4_ws/install/local_setup.bash
@@ -195,11 +206,21 @@ export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 export ROS_DOMAIN_ID=0
 export ROS_LOCALHOST_ONLY=0
 ```
-可以创建一个env.sh脚本，可用`source ~/px4_ws/env.sh`代替上面五行
 
 ### 打开OeangePi的UART
 
 开启方法参考OrangePi的用户手册，我们打开的是Uart7
+
+![[Pasted image 20261106141453.png]]
+
+运行orangepi-config
+
+```bash
+sudo orangepi-config
+```
+
+选择 System -> Hardware -> uart7 然后保存重启
+
 
 #### 检查OrangePi的串口权限
 
@@ -249,6 +270,14 @@ MicroXRCEAgent serial --dev /dev/ttyS7 -b 1500000 -v 4
 `-b 1500000` 表示设置波特率为1500000
 `-v 4` 表示将日志详细程度设为 INFO（普通信息）级别。
 
+后面我们将上面的命令编写为run_agent.sh
+
+~/px4_ws/run_agent.sh
+```bash
+source ~/px4_ws/env.sh
+MicroXRCEAgent serial --dev /dev/ttyS7 -b 1500000 -v 4
+```
+
 终端B：
 ```bash
 source ~/px4_ws/env.sh
@@ -265,6 +294,33 @@ ros2 topic hz /fmu/out/sensor_combined
 
 ## 2. 安装RealSense SDK
 
+参考realsense[官方github仓库](https://github.com/realsenseai/librealsense/blob/master/doc/distribution_linux.md) ，执行下面的命令安装SDK：
+
+ ```bash
+ # Ensure the directory exists
+sudo mkdir -p /etc/apt/keyrings
+
+# Download and dearmor
+curl -sSf https://librealsense.realsenseai.com/Debian/librealsenseai.asc | \
+gpg --dearmor | sudo tee /etc/apt/keyrings/librealsenseai.gpg > /dev/null
+
+# Make sure apt HTTPS support is installed
+sudo apt-get install apt-transport-https
+
+# Add the server to the list of repositories
+echo "deb [signed-by=/etc/apt/keyrings/librealsenseai.gpg] https://librealsense.realsenseai.com/Debian/apt-repo `lsb_release -cs` main" | \
+sudo tee /etc/apt/sources.list.d/librealsense.list
+sudo apt-get update
+
+# Install the libraries
+sudo apt-get install librealsense2-dkms
+sudo apt-get install librealsense2-utils
+
+# Optionally install the developer and debug packages
+sudo apt-get install librealsense2-dev
+sudo apt-get install librealsense2-dbg
+ ```
+ 
  安装ROS驱动
 
 ```bash
@@ -315,7 +371,7 @@ ros2 run rqt_image_view rqt_image_view
 ```bash
 source /home/orangepi/px4_ws/env.sh
 
-rros2 launch realsense2_camera rs_launch.py \
+ros2 launch realsense2_camera rs_launch.py \
   camera_namespace:=camera \
   camera_name:=camera \
   enable_color:=false \
@@ -325,14 +381,14 @@ rros2 launch realsense2_camera rs_launch.py \
   depth_module.infra_profile:=848x480x30 \
   depth_module.infra1_format:=Y8 \
   depth_module.infra2_format:=Y8 \
-  enable_sync:=true \
-  config_file:=/home/orangepi/px4_ws/realsense_emitter_off.yaml
+  enable_sync:=true 
 ```
 
 #### 终端2：查看相机话题是否发布，并关闭红外模块
 ```bash
 source /home/orangepi/px4_ws/env.sh
 ros2 topic list -t
+
 ```
 
 #### 终端3：开启DDS Agent连接飞控
@@ -413,6 +469,13 @@ ros2 bag record -s sqlite3 -o ~/data/bags/vio_test01 \
 | **`EKF2_EV_NOISE_MD`**  | **`0`**          | 使用视觉消息自带的协方差矩阵，并以参数作为下限保护                                            |
 | **`EKF2_EV_DELAY`**     | **`0.0` ms**     | 时间戳已经靠uXRCE-DDS 的软件时间同步                                              |
 | **`EKF2_EV_POS_X/Y/Z`** | **`0.0` m**      | OpenVINS 输出的就是飞控 `imu` 坐标系原点的位姿，因此相对于 IMU 的杆臂为 0                     |
+| `EKF2_EV_GATE`          | 3.0              |                                                                      |
+| `MPC_XY_VEL_MAX`        | 0.8              | 最大水平速度                                                               |
+| `MPC_Z_VEL_MAX_UP`      | 0.6              | 最大上升速度                                                               |
+| `MPC_TILTMAX_AIR`       | 20               | 最大倾角                                                                 |
+| `MPC_THR_MAX`           | 75%              | 最大油门                                                                 |
+
+
 模式添加一个Position模式
 
 ## 3. 在小电脑启动OpenVINS
@@ -423,11 +486,7 @@ ros2 bag record -s sqlite3 -o ~/data/bags/vio_test01 \
 ```bash
 source /home/orangepi/px4_ws/env.sh
 
-# 下面的命令只需要执行一次
-cat > ~/px4_ws/realsense_emitter_off.yaml <<'EOF'
-depth_module.emitter_enabled: 0
-EOF
-
+# 启动相机
 ros2 launch realsense2_camera rs_launch.py \
   camera_namespace:=camera \
   camera_name:=camera \
@@ -438,8 +497,7 @@ ros2 launch realsense2_camera rs_launch.py \
   depth_module.infra_profile:=848x480x30 \
   depth_module.infra1_format:=Y8 \
   depth_module.infra2_format:=Y8 \
-  enable_sync:=true \
-  config_file:=/home/orangepi/px4_ws/realsense_emitter_off.yaml
+  enable_sync:=true 
 ```
 
 #### 终端2：查看相机话题是否发布
@@ -474,17 +532,22 @@ source ~/px4_ws/env.sh
 ros2 run px4_imu_bridge odom_to_px4
 ```
 
-录制原始数据
+## 4. 录制数据
+### 录制原始数据
 ```bash
-ros2 bag record -s sqlite3 --max-cache-size 300000000 -o ~/bags/$(date +%m%d_%H%M)_loop_slow \
-  /imu /camera/camera/infra1/image_rect_raw /camera/camera/infra2/image_rect_raw \
-  /camera/camera/infra1/camera_info /camera/camera/infra2/camera_info \
+ros2 bag record -s sqlite3 --max-cache-size 300000000 \
+-o ~/bags/raw_data_$(date +%m%d_%H%M) \
+  /imu \
+  /camera/camera/infra1/image_rect_raw \ 
+  /camera/camera/infra2/image_rect_raw \
+  /camera/camera/infra1/camera_info \
+  /camera/camera/infra2/camera_info \
   /fmu/out/sensor_combined /fmu/out/vehicle_odometry
 ```
 
-录制OpenVINS的输出数据
+### 录制OpenVINS的输出数据
 ```bash
-ros2 bag record -s sqlite3 --max-cache-size 300000000 -o ~/data/bags/vio_test01 \
+ros2 bag record -s sqlite3 --max-cache-size 300000000 -o ~/bags/openvins_out_$(date +%m%d_%H%M) \
 /tf \
 /ov_msckf/pathimu \
 /ov_msckf/odomimu \
@@ -493,3 +556,258 @@ ros2 bag record -s sqlite3 --max-cache-size 300000000 -o ~/data/bags/vio_test01 
 /ov_msckf/points_msckf \
 /ov_msckf/points_slam
 ```
+
+### 录制分析有用的所有数据
+```bash
+source ~/px4_ws/env.sh 
+source ~/vio_ws/install/setup.bash
+
+ros2 bag record --s sqlite3 --max-cache-size 300000000 \
+-o ~/bags/vio_full_$(date +%Y%m%d_%H%M%S) \
+  /imu \
+  /camera/camera/infra1/image_rect_raw \
+  /camera/camera/infra2/image_rect_raw \
+  /camera/camera/infra1/camera_info \
+  /camera/camera/infra2/camera_info \
+  /ov_msckf/odomimu \
+  /fmu/in/vehicle_visual_odometry \
+  /fmu/out/sensor_combined \
+  /fmu/out/timesync_status \
+  /fmu/out/vehicle_local_position \
+  /fmu/out/vehicle_attitude \
+  /fmu/out/estimator_status_flags \
+  /fmu/out/vehicle_status \
+  /fmu/out/failsafe_flags \
+  /fmu/out/battery_status
+```
+
+### 本地播放rviz2配置
+```bash
+rviz2 -d /home/yummy/UAV_NAV/vio_ws/src/open_vins/ov_msckf/launch/display_ros2.rviz
+
+```
+## 5. 编写一键启动tmux脚本
+
+编写openvins.sh在目录~/px4_ws/
+
+~/px4_ws/openvins.sh
+```bash
+#!/usr/bin/env bash
+
+# 一键启动 / 停止 OpenVINS 链路
+# ./openvins.sh       启动；已有会话时进入
+# ./openvins.sh stop  停止
+#
+# tmux:
+# Ctrl-b 后按数字：切换窗口
+# Ctrl-b 后按 d：退出界面，节点继续运行
+
+set -euo pipefail
+
+SESSION="openvins"
+
+ENV_CMD='source "$HOME/px4_ws/env.sh"'
+OPENVINS_ENV_CMD="$ENV_CMD"' && source "$HOME/openvins_ws/install/setup.bash"'
+
+# 先停下游，再停上游
+WINDOWS=(status odom openvins camera imu agent)
+
+# 停止会话
+if [[ "${1:-}" == "stop" ]]; then
+  if ! tmux has-session -t "$SESSION" 2>/dev/null; then
+    echo "没有运行中的 $SESSION 会话"
+    exit 0
+  fi
+
+  for w in "${WINDOWS[@]}"; do
+    tmux send-keys -t "$SESSION:$w" C-c 2>/dev/null || true
+    sleep 0.5
+  done
+
+  sleep 2
+  tmux kill-session -t "$SESSION"
+  echo "已停止 $SESSION 会话"
+  exit 0
+fi
+
+# 已存在会话时，直接进入
+if tmux has-session -t "$SESSION" 2>/dev/null; then
+  echo "会话已存在，直接进入。重启请先运行：$0 stop"
+  exec tmux attach-session -t "$SESSION"
+fi
+
+# 创建第一个窗口，获取窗口 ID
+LAST_WINDOW=$(
+  tmux new-session -d -P -F '#{window_id}' \
+    -s "$SESSION" -n agent
+)
+
+tmux set-option -t "$SESSION" mouse on
+tmux set-window-option -t "$LAST_WINDOW" automatic-rename off
+tmux set-window-option -t "$LAST_WINDOW" allow-rename off
+
+# 在指定窗口发送命令
+send_command() {
+  local window_id="$1"
+  local command="$2"
+
+  tmux send-keys -t "$window_id" -l "cd \"\$HOME\" && $command"
+  tmux send-keys -t "$window_id" Enter
+}
+
+# 创建窗口并启动命令
+run_next() {
+  local name="$1"
+  local wait_seconds="$2"
+  local command="$3"
+  local window_id
+
+  # -a：在上一个窗口之后插入，避免指定到已占用的编号
+  window_id=$(
+    tmux new-window -a -P -F '#{window_id}' \
+      -t "$LAST_WINDOW" -n "$name"
+  )
+
+  tmux set-window-option -t "$window_id" automatic-rename off
+  tmux set-window-option -t "$window_id" allow-rename off
+
+  LAST_WINDOW="$window_id"
+  send_command "$window_id" "$command"
+
+  echo "启动 $name，等待 ${wait_seconds}s ..."
+  sleep "$wait_seconds"
+}
+
+send_command "$LAST_WINDOW" \
+  "$ENV_CMD && \"\$HOME/px4_ws/run_agent.sh\""
+echo "启动 agent，等待 2s ..."
+sleep 2
+
+run_next imu 2 \
+  "$ENV_CMD && ros2 run px4_imu_bridge sensor_combined_to_imu"
+
+run_next camera 6 \
+  "$ENV_CMD && ros2 param set /camera/camera depth_module.emitter_enabled 0 && ros2 launch realsense2_camera rs_launch.py camera_namespace:=camera camera_name:=camera enable_color:=false enable_depth:=false enable_infra1:=true enable_infra2:=true depth_module.infra_profile:=848x480x30 depth_module.infra1_format:=Y8 depth_module.infra2_format:=Y8 enable_sync:=true"
+
+run_next openvins 4 \
+  "$OPENVINS_ENV_CMD && ros2 launch ov_msckf subscribe.launch.py config:=rs_d430"
+
+run_next odom 1 \
+  "$ENV_CMD && ros2 run px4_imu_bridge odom_to_px4"
+
+run_next status 0 \
+  "$ENV_CMD && python3 \"\$HOME/px4_ws/openvins_status.py\""
+
+tmux select-window -t "$LAST_WINDOW"
+exec tmux attach-session -t "$SESSION"
+```
+
+再编写一个检测飞控融合状态的py脚本，同样保存在~/px4_ws/目录下
+
+~/px4_ws/openvins_status.py
+```python
+#!/usr/bin/env python3
+"""OpenVINS -> PX4 EKF2 一屏状态面板（每秒刷新一行）。
+运行位置：香橙派。先 source ~/px4_ws/env.sh（需要能 import px4_msgs），再 python3 openvins_status.py
+"""
+import math
+import time
+
+import rclpy
+from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
+from nav_msgs.msg import Odometry
+from px4_msgs.msg import VehicleOdometry, EstimatorStatusFlags, VehicleLocalPosition
+
+G, R, Y, N = '\033[32m', '\033[31m', '\033[33m', '\033[0m'
+
+
+def ok(good, text=None):
+    return f"{G if good else R}{text or ('OK' if good else 'NO')}{N}"
+
+
+class Track:
+    def __init__(self):
+        self.n, self.last, self.msg = 0, None, None
+
+    def cb(self, msg):
+        self.n += 1
+        self.last = time.monotonic()
+        self.msg = msg
+
+    def hz(self, dt):
+        h, self.n = self.n / dt, 0
+        return h
+
+    def alive(self, timeout):
+        return self.last is not None and time.monotonic() - self.last < timeout
+
+
+class VioStatus(Node):
+    def __init__(self):
+        super().__init__('vio_status')
+        self.ov, self.ev, self.flags, self.lpos = Track(), Track(), Track(), Track()
+        q = qos_profile_sensor_data  # best-effort，可兼容 PX4 话题和普通 reliable 发布者
+        self.create_subscription(Odometry, '/ov_msckf/odomimu', self.ov.cb, q)
+        self.create_subscription(VehicleOdometry, '/fmu/in/vehicle_visual_odometry', self.ev.cb, q)
+        self.create_subscription(EstimatorStatusFlags, '/fmu/out/estimator_status_flags', self.flags.cb, q)
+        self.create_subscription(VehicleLocalPosition, '/fmu/out/vehicle_local_position', self.lpos.cb, q)
+        self.t0 = time.monotonic()
+        self.create_timer(1.0, self.show)
+
+    def show(self):
+        now = time.monotonic()
+        dt, self.t0 = now - self.t0, now
+        ov_hz, ev_hz = self.ov.hz(dt), self.ev.hz(dt)
+        self.flags.hz(dt)
+        self.lpos.hz(dt)
+        out = [time.strftime('%H:%M:%S'),
+               f"OpenVINS {ok(ov_hz > 50, f'{ov_hz:5.1f}Hz')}",
+               f"发往PX4 {ok(ev_hz > 20, f'{ev_hz:4.1f}Hz')}"]
+
+        e = self.ev.msg
+        if e is not None and self.ev.alive(0.5):
+            # timestamp_sample 应为香橙派系统时间(us)；数值异常说明时间基准不对
+            age_ms = (time.time() * 1e6 - e.timestamp_sample) / 1e3
+            out.append(f"延迟 {ok(0 < age_ms < 100, f'{age_ms:6.0f}ms')}")
+            out.append(f"EV[{e.position[0]:+.2f} {e.position[1]:+.2f} {e.position[2]:+.2f}] reset {e.reset_counter}")
+
+        f = self.flags.msg
+        if f is not None and self.flags.alive(3.0):
+            def st(on, rej):
+                if on and not rej:
+                    return f"{G}融合{N}"
+                return f"{Y}被拒{N}" if on else f"{R}未用{N}"
+            out.append("EKF 位置 " + st(f.cs_ev_pos, f.reject_hor_pos) +
+                       " 高度 " + st(f.cs_ev_hgt, f.reject_ver_pos) +
+                       " 速度 " + st(f.cs_ev_vel, f.reject_hor_vel) +
+                       " 航向 " + st(f.cs_ev_yaw, f.reject_yaw))
+        else:
+            out.append(f"EKF状态 {R}无数据{N}")
+
+        p = self.lpos.msg
+        if p is not None and self.lpos.alive(1.5):
+            yaw = math.degrees(p.heading) if math.isfinite(p.heading) else float('nan')
+            out.append(f"本地位置 xy {ok(p.xy_valid)} z {ok(p.z_valid)} "
+                       f"[{p.x:+.2f} {p.y:+.2f} {p.z:+.2f}] 航向 {yaw:+.0f}°")
+        else:
+            out.append(f"本地位置 {R}无数据{N}")
+        print(' | '.join(out), flush=True)
+
+
+def main():
+    rclpy.init()
+    node = VioStatus()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.try_shutdown()
+
+
+if __name__ == '__main__':
+    main()
+```
+

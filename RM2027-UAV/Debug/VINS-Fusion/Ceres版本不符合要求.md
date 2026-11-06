@@ -141,22 +141,16 @@ cmake --install \
 ```bash
 cd /home/yummy/UAV_NAV/vins_ws
 
-CMAKE_BUILD_PARALLEL_LEVEL=2 colcon build \
-  --symlink-install \
-  --executor sequential \
-  --cmake-clean-cache \
-  --cmake-args \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCeres_DIR="$HOME/.local/ceres-2.1.0/lib/cmake/Ceres"
+MAKEFLAGS="-j2" colcon build --parallel-workers 1 --symlink-install --executor sequential --cmake-clean-cache --cmake-args -DCMAKE_BUILD_TYPE=Release -DCeres_DIR="$HOME/.local/ceres-2.1.0/lib/cmake/Ceres"
 # 如果安装到用户目录（使用sudo安装）
 MAKEFLAGS="-j2" colcon build --parallel-workers 1 --symlink-install --cmake-clean-cache --cmake-args -DCMAKE_BUILD_TYPE=Release -DCeres_DIR=/usr/local/lib/cmake/Ceres
 ```
--  `--cmake-clean-cache`: 清除之前缓存的 CMake 配置，让项目重新查找依赖。
+-  `--cmake-clean-cache`: 清除之前缓存的 CMake 配置，让项目重新查找依赖。如果依赖正确可以不添加
 -  `-DCeres_DIR=...`： 明确告诉 CMake 使用新安装的 Ceres 配置目录。`Ceres_DIR` 必须指向 **包含 `CeresConfig.cmake` 的目录**
 
 使用下面的命令查找ceres安装的目录：
 ```bash
-grep -E "CERES_VERSION_(MAJOR|MINOR|REVISION) " /usr/local/include/ceres/version.h /usr/include/ceres/version.h 2>/dev/null
+grep -E "CERES_VERSION_(MAJOR|MINOR|REVISION) " /usr/local/include/ceres/version.h /usr/include/ceres/version.h "$HOME/.local/ceres-2.1.0/include/ceres/version.h" 2>/dev/null
 ```
 
 有以下输出的目录即为2.1.0版本

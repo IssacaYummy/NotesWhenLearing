@@ -2,7 +2,7 @@
 
 安装依赖
 ```bash
-sudo apt install -y ros-humble-cv-bridge ros-humble-image-transport \ libgoogle-glog-dev libgflags-dev libatlas-base-dev libeigen3-dev libsuitesparse-dev
+sudo apt install -y ros-humble-cv-bridge ros-humble-image-transport libgoogle-glog-dev libgflags-dev libatlas-base-dev libeigen3-dev libsuitesparse-dev
 
 ```
 
