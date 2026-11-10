@@ -79,7 +79,7 @@ source install/setup.bash
 rosbags-convert \
   --src ~/data/bags/MH_01_easy.bag \
   --dst ~/data/bags/MH_01_easy_ros2_humble \
-  --dst-storage sqlite3 \
+  --dst-storage mcap \
   --dst-version 8 \
   --dst-typestore ros2_humble
 ```
@@ -441,7 +441,7 @@ ros2 topic echo /ov_msckf/odomimu --once
 ```bash
 source ~/px4_ws/env.sh
 source ~/vio_ws/install/setup.bash
-ros2 bag record -s sqlite3 -o ~/data/bags/vio_test01 \
+ros2 bag record -s mcap -o ~/data/bags/vio_test01 \
   /tf \
   /ov_msckf/pathimu \
   /ov_msckf/odomimu \
@@ -535,26 +535,17 @@ ros2 run px4_imu_bridge odom_to_px4
 ## 4. 录制数据
 ### 录制原始数据
 ```bash
-ros2 bag record -s sqlite3 --max-cache-size 300000000 \
--o ~/bags/raw_data_$(date +%m%d_%H%M) \
-  /imu \
-  /camera/camera/infra1/image_rect_raw \ 
-  /camera/camera/infra2/image_rect_raw \
-  /camera/camera/infra1/camera_info \
-  /camera/camera/infra2/camera_info \
-  /fmu/out/sensor_combined /fmu/out/vehicle_odometry
+ros2 bag record -s mcap --max-cache-size 300000000 -o ~/bags/raw_data_$(date +%m%d_%H%M) /imu /camera/camera/infra1/image_rect_raw /camera/camera/infra2/image_rect_raw /camera/camera/infra1/camera_info /camera/camera/infra2/camera_info /fmu/out/sensor_combined /fmu/out/vehicle_odometry
+# 录制完后一定要执行下面的命令
+sync
 ```
 
 ### 录制OpenVINS的输出数据
 ```bash
-ros2 bag record -s sqlite3 --max-cache-size 300000000 -o ~/bags/openvins_out_$(date +%m%d_%H%M) \
-/tf \
-/ov_msckf/pathimu \
-/ov_msckf/odomimu \
-/ov_msckf/poseimu \
-/ov_msckf/trackhist \
-/ov_msckf/points_msckf \
-/ov_msckf/points_slam
+ros2 bag record -s mcap --max-cache-size 300000000 -o ~/bags/openvins_out_$(date +%m%d_%H%M) /tf /ov_msckf/pathimu /ov_msckf/odomimu /ov_msckf/poseimu /ov_msckf/trackhist /ov_msckf/points_msckf /ov_msckf/points_slam
+
+# 录制完后一定要执行下面的命令
+sync
 ```
 
 ### 录制分析有用的所有数据
@@ -562,23 +553,10 @@ ros2 bag record -s sqlite3 --max-cache-size 300000000 -o ~/bags/openvins_out_$(d
 source ~/px4_ws/env.sh 
 source ~/vio_ws/install/setup.bash
 
-ros2 bag record --s sqlite3 --max-cache-size 300000000 \
--o ~/bags/vio_full_$(date +%Y%m%d_%H%M%S) \
-  /imu \
-  /camera/camera/infra1/image_rect_raw \
-  /camera/camera/infra2/image_rect_raw \
-  /camera/camera/infra1/camera_info \
-  /camera/camera/infra2/camera_info \
-  /ov_msckf/odomimu \
-  /fmu/in/vehicle_visual_odometry \
-  /fmu/out/sensor_combined \
-  /fmu/out/timesync_status \
-  /fmu/out/vehicle_local_position \
-  /fmu/out/vehicle_attitude \
-  /fmu/out/estimator_status_flags \
-  /fmu/out/vehicle_status \
-  /fmu/out/failsafe_flags \
-  /fmu/out/battery_status
+ros2 bag record --s mcap --max-cache-size 300000000 -o ~/bags/vio_full_$(date +%Y%m%d_%H%M%S) /imu /camera/camera/infra1/image_rect_raw /camera/camera/infra2/image_rect_raw /camera/camera/infra1/camera_info /camera/camera/infra2/camera_info /ov_msckf/odomimu /fmu/in/vehicle_visual_odometry /fmu/out/sensor_combined /fmu/out/timesync_status /fmu/out/vehicle_local_position /fmu/out/vehicle_attitude /fmu/out/estimator_status_flags /fmu/out/vehicle_status /fmu/out/failsafe_flags /fmu/out/battery_status
+  
+# 录制完后一定要执行下面的命令
+sync
 ```
 
 ### 本地播放rviz2配置

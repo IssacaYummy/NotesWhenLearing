@@ -45,6 +45,32 @@ sudo ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
 出现下面的页面即为连接成功
 ![[Pasted image 20261024100112.png]]
 
+## 免密登陆远程设备
+
+首先查看本地有没有ssh-key
+
+```bash
+# 检查本地是否已有公钥
+ls ~/.ssh/id_*.pub
+```
+
+如果没有的话就执行命令生成，可以一直按回车保持默认，有的话跳过这一步
+
+```bash
+ssh-keygen -t ed25519
+```
+
+将该电脑的公钥追加到被远程的电脑
+
+```bash
+ssh-copy-id 用户名@机载IP
+```
+
+然后可以使用下面的命令免密登陆
+
+```bash
+ssh "用户名@机载IP"
+```
 # 3. 使用vscode进行远程编辑代码
 
 搜索拓展 Remote -SSH 并安装，安装后按`Ctrl+Shift+P`，选择`Remote-SSH: Connect to Host`，添加需要远程连接的主机，输入
@@ -107,7 +133,7 @@ rsync -avzP username@remote_host:/path/to/remote/file.txt /path/to/local/dir/
 ```bash
 rsync -avzP username@remote_host:/path/to/remote/folder /path/to/local/dir/
 
-rsync -avzP orangepi@192.168.5.109:/home/orangepi/data/bags/vio_test6 /home/yummy/UAV_NAV/data/bags/test-bags/
+rsync -avzP orangepi@192.168.5.109:/home/orangepi/bags/ /home/yummy/UAV_NAV/data/bags/test-bags/raw_data/
 ```
 
 ### 3. 上传单个文件
